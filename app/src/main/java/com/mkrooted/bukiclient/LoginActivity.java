@@ -90,7 +90,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             loginBtn.setText("Увійти");
 
             if (result == LoginResult.SUCCESS) {
-                showToast("Вхід успвшний");
+                showToast("Вхід успішний");
                 finish();
             } else if(result == LoginResult.INVALID_INPUT) {
                 showToast("Уведіть email та пароль");
@@ -159,6 +159,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             JSONObject response = new JSONObject(rawResponse);
             if ( response.has("error") ){
                 Log.d("BukiClient", "Can't login");
+                is.close();
                 return LoginResult.INVALID_LOGIN;
             }
             response = response.getJSONObject("response");
@@ -170,8 +171,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             SharedPreferences.Editor editor = preferences.edit();
             editor.putString("cookie", rawCookies);
             editor.putString("name", response.get("users_sname")+" "+response.get("users_name")+" "+response.get("users_fname"));
-            editor.apply();
-            return LoginResult.SUCCESS;
+            editor.commit();
         }
         catch (IOException | JSONException e){
             e.printStackTrace();
@@ -184,8 +184,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                 }
             }
         }
-
-
-        return LoginResult.OTHER_DICH;
+        return LoginResult.SUCCESS;
     }
 }

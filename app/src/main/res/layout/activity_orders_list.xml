@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.mkrooted.bukiclient.OrdersListActivity"
+    android:background="#eee">
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:id="@+id/headImage2"
+        android:layout_alignParentEnd="true"
+        android:src="@drawable/head1"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:cropToPadding="false"
+        android:scaleType="centerCrop"
+        android:saveEnabled="false"
+        android:layout_marginBottom="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:text="@string/orders_label"
+        android:id="@+id/orders_type_label"
+        android:layout_alignParentTop="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20sp"
+        android:textSize="25sp"
+        android:layout_below="@id/headImage2"/>
+
+    <ListView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/ordersListView"
+        android:layout_below="@+id/orders_type_label"
+        android:layout_centerHorizontal="true"
+        android:choiceMode="singleChoice"
+        />
+
+</RelativeLayout>

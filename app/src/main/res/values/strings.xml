@@ -7,7 +7,7 @@
     <string name="personal_orders_label">Персональні</string>
     <string name="potential_orders_label">Потенціальні</string>
     <string name="update_btn_label">Оновити</string>
-    <string name="orders_label">Замовлення</string>
+    <string name="orders_label">Заявки</string>
     <string name="title_activity_login">Вхід</string>
 
     <!-- Strings related to login -->
@@ -28,4 +28,10 @@
     <string name="login_title">Вхід</string>
     <string name="password_input_label">Пароль</string>
     <string name="never_updated">Ніколи не оновлювалось</string>
+    <string name="not_logged_in">Ви не увійшли у профіль</string>
+    <string name="active_orders_button_template">Активні (0)</string>
+    <string name="ended_orders_button_template">Завершені (0)</string>
+    <string name="personal_orders_button_template">Персональні (0)</string>
+    <string name="potential_orders_button_template">Потенційні (0)</string>
+    <string name="logout">Вийти</string>
 </resources>

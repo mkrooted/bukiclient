@@ -29,6 +29,7 @@ import java.net.CookieManager;
 import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
@@ -36,8 +37,8 @@ import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity implements View.OnClickListener{
     public static final String TAG = "BukiClient1";
-    TextView pibText, activeOrders, endedOrders, personalOrders, potentialOrders, lastUpdate;
-    Button updateBtn;
+    TextView pibText, lastUpdate;
+    Button updateBtn, activeOrders, endedOrders, personalOrders, potentialOrders, logoutBtn;
     ImageView avatarView;
     String cookie;
 
@@ -52,24 +53,34 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
     private void init(){
         pibText = (TextView) findViewById(R.id.name_view);
-        activeOrders = (TextView) findViewById(R.id.active_orders);
-        endedOrders = (TextView) findViewById(R.id.ended_orders);
-        personalOrders = (TextView) findViewById(R.id.personal_orders);
-        potentialOrders = (TextView) findViewById(R.id.potential_orders);
+        activeOrders = (Button) findViewById(R.id.active_orders_button);
+        endedOrders = (Button) findViewById(R.id.ended_orders_button);
+        personalOrders = (Button) findViewById(R.id.personal_orders_button);
+        potentialOrders = (Button) findViewById(R.id.potential_orders_button);
         lastUpdate = (TextView) findViewById(R.id.last_update_date);
         updateBtn = (Button) findViewById(R.id.update_btn);
         avatarView = (ImageView) findViewById(R.id.avatar);
+        logoutBtn = (Button) findViewById(R.id.logout_button);
         cookie = null;
         updateBtn.setOnClickListener(this);
+        logoutBtn.setOnClickListener(this);
 
         SharedPreferences prefs = getSharedPreferences(TAG, 0);
         String lastUpdatedString = prefs.getString("lastUpdated", null);
         if (lastUpdatedString!=null) lastUpdate.setText(lastUpdatedString);
-        pibText.setText(prefs.getString("name", "Дані відсутні"));
-        activeOrders.setText(prefs.getString("activeOrders", "Дані відсутні"));
-        endedOrders.setText(prefs.getString("endedOrders", "Дані відсутні"));
-        personalOrders.setText(prefs.getString("personalOrders", "Дані відсутні"));
-        potentialOrders.setText(prefs.getString("potentialOrders", "Дані відсутні"));
+        pibText.setText(prefs.getString("name", "Ви не увійшли в профіль"));
+
+        ArrayList<String> orderAmounts = new ArrayList<String>();
+
+        orderAmounts.add(0, prefs.getString("activeOrders", "?"));
+        orderAmounts.add(1, prefs.getString("endedOrders", "?"));
+        orderAmounts.add(2, prefs.getString("personalOrders", "?"));
+        orderAmounts.add(3, prefs.getString("potentialOrders", "?"));
+
+        activeOrders.setText(getString(R.string.active_orders_button_template).replace("0", orderAmounts.get(0)));
+        endedOrders.setText(getString(R.string.ended_orders_button_template).replace("0", orderAmounts.get(1)));
+        personalOrders.setText(getString(R.string.personal_orders_button_template).replace("0", orderAmounts.get(2)));
+        potentialOrders.setText(getString(R.string.potential_orders_button_template).replace("0", orderAmounts.get(3)));
     }
 
     private void checkLoggedIn(){
@@ -90,6 +101,26 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 updateBtn.setEnabled(false);
                 new DataUpdater().execute();
                 break;
+            case R.id.active_orders_button:
+                Intent intent = new Intent(this, OrdersListActivity.class);
+                intent.putExtra("OrderType", OrderType.ACTIVE);
+                startActivity(intent);
+                break;
+            case R.id.logout_button:
+                cookie = null;
+                SharedPreferences prefs = getSharedPreferences(TAG, 0);
+                SharedPreferences.Editor editor = prefs.edit();
+                editor.remove("cookie");
+                editor.remove("name");
+                editor.remove("lastUpdate");
+                editor.commit();
+
+                activeOrders.setText(getString(R.string.active_orders_button_template).replace("0", "?"));
+                endedOrders.setText(getString(R.string.ended_orders_button_template).replace("0", "?"));
+                personalOrders.setText(getString(R.string.personal_orders_button_template).replace("0", "?"));
+                potentialOrders.setText(getString(R.string.potential_orders_button_template).replace("0", "?"));
+                lastUpdate.setText(getString(R.string.never_updated));
+                startActivity(new Intent(this, LoginActivity.class));
         }
     }
 
@@ -100,6 +131,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         protected Void doInBackground(Void... params) {
+
+            cookie = getSharedPreferences(TAG, 0).getString("cookie", "");
+
             ConnectivityManager connManager;
             NetworkInfo networkInfo;
 
@@ -143,6 +177,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 if ( response.has("error") ){
                     Log.d("BukiClient", "Can't login");
                     result = LoginResult.INVALID_LOGIN;
+                    is.close();
                     return null;
                 }
 
@@ -192,8 +227,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                     }
                 }
                 else avatarBitmap = null;
-
-                return null;
             }
             catch (IOException | JSONException e){
                 e.printStackTrace();
@@ -230,10 +263,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             if (result == LoginResult.SUCCESS) {
                 Toast.makeText(getApplicationContext(), "Успішно оновлено", Toast.LENGTH_SHORT).show();
                 try {
-                    activeOrders.setText(response.get("active").toString());
-                    endedOrders.setText(response.get("ended").toString());
-                    personalOrders.setText(response.get("personal").toString());
-                    potentialOrders.setText(response.get("potential").toString());
+                    ArrayList<String> orderAmounts = new ArrayList<>();
+                    orderAmounts.add(response.get("active").toString());
+                    orderAmounts.add(response.get("ended").toString());
+                    orderAmounts.add(response.get("personal").toString());
+                    orderAmounts.add(response.get("potential").toString());
+
+                    activeOrders.setText(getString(R.string.active_orders_button_template).replace("0", orderAmounts.get(0)));
+                    endedOrders.setText(getString(R.string.ended_orders_button_template).replace("0", orderAmounts.get(1)));
+                    personalOrders.setText(getString(R.string.personal_orders_button_template).replace("0", orderAmounts.get(2)));
+                    potentialOrders.setText(getString(R.string.potential_orders_button_template).replace("0", orderAmounts.get(3)));
 
                     editor.putString("activeOrders", response.get("active").toString());
                     editor.putString("endedOrders", response.get("ended").toString());
@@ -248,10 +287,14 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 }
             } else if(result == LoginResult.INVALID_LOGIN) {
                 startActivity(new Intent(getApplicationContext(), LoginActivity.class));
+                cookie = prefs.getString("cookie", null);
             } else if(result == LoginResult.NO_CONNECTION) {
                 Toast.makeText(getApplicationContext(), "Відсутнє підключення до мережі", Toast.LENGTH_SHORT).show();
+            } else if(result == LoginResult.HTTP_ERROR) {
+                Toast.makeText(getApplicationContext(), "Сталася помилка на сервері", Toast.LENGTH_SHORT).show();
             }
             editor.apply();
         }
     }
+
 }
